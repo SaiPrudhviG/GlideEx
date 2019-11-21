@@ -17,6 +17,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -49,25 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void dothis()
     {
-        new Thread(new Runnable() {
-            public void run() {
-                while (progressStatus < 100) {
-                    progressStatus += 1;
-                    handler.post(new Runnable() {
-                        public void run() {
-                            progressBar.setProgress(progressStatus);
-
-                        }
-                    });
-                    try {
-
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         String imagepath = "https://cdn.pixabay.com/photo/2015/12/01/20/28/fall-1072821_1280.jpg";
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
@@ -79,59 +62,12 @@ public class MainActivity extends AppCompatActivity {
             {
                 Toast.makeText(this, "Mobile", Toast.LENGTH_SHORT).show();
             }
-            new MyTextTask().execute(imagepath);
+            Glide.with(this)
+                    .load("https://cdn.pixabay.com/photo/2015/12/01/20/28/fall-1072821_1280.jpg")
+                    .override(200, 200).into(img);
         }
     }
 
-    private class MyTextTask extends AsyncTask<String, Void, Bitmap>
-    {
-
-        @Override
-        protected Bitmap doInBackground(String... strings) {
-            return downloadImage(strings[0]);
-        }
-
-        private Bitmap downloadImage(String string)
-        {
-            Bitmap bitmap=null;
-            URL url= null;
-            try {
-                url = new URL(string);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            try {
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setReadTimeout(4000);
-                httpURLConnection.setConnectTimeout(4000);
-                httpURLConnection.setRequestMethod("GET");
-                httpURLConnection.setDoInput(true);
-                httpURLConnection.connect();
-                int code = httpURLConnection.getResponseCode();
-                if (code == HttpURLConnection.HTTP_OK)
-                {
-                    InputStream inputStream=httpURLConnection.getInputStream();
-                    if(inputStream!=null) {
-                        bitmap = BitmapFactory.decodeStream(inputStream);
-
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap)
-        {
-            if (bitmap != null)
-            {                  img.setImageBitmap(bitmap);
-                img.setScaleType(ImageView.ScaleType.FIT_XY);
-            }
-        }
-
-        }
     }
 
 
